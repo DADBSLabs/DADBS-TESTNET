@@ -49,7 +49,7 @@ impl Node {
     }
 
     pub async fn start(&mut self) -> Result<(), Box<dyn std::error::Error>> {
-        // 验证质押
+       
         self.verify_stake().await?;
 
         let addr = format!("{}:{}", self.config.host, self.config.port);
@@ -61,7 +61,7 @@ impl Node {
         
         info!("Node listening on {}", addr);
 
-        // 启动清理任务
+        
         let peers = Arc::clone(&self.peers);
         tokio::spawn(async move {
             loop {
@@ -70,7 +70,7 @@ impl Node {
             }
         });
 
-        // 连接引导节点
+       
         self.connect_to_bootstrap_nodes().await?;
 
         loop {
@@ -161,7 +161,7 @@ impl Node {
     ) -> Result<(), Box<dyn std::error::Error>> {
         socket.set_nodelay(true)?;
         
-        // 设置 TCP keepalive
+        
         let keepalive = socket2::TcpKeepalive::new()
             .with_time(Duration::from_secs(60))
             .with_interval(Duration::from_secs(10));
@@ -169,10 +169,10 @@ impl Node {
         let socket2 = socket2::SockRef::from(&socket);
         socket2.set_tcp_keepalive(&keepalive)?;
         
-        // 添加到 peers
+        
         peers.write().insert(addr, PeerInfo::new(addr));
         
-        // 实现连接处理逻辑
+        
         Ok(())
     }
 
@@ -184,7 +184,7 @@ impl Node {
         let addr = stream.peer_addr()?;
         stream.set_nodelay(true)?;
         
-        // 设置 TCP keepalive
+        
         let keepalive = socket2::TcpKeepalive::new()
             .with_time(Duration::from_secs(60))
             .with_interval(Duration::from_secs(10));
@@ -192,10 +192,10 @@ impl Node {
         let socket2 = socket2::SockRef::from(&stream);
         socket2.set_tcp_keepalive(&keepalive)?;
         
-        // 添加到 peers
+        
         peers.write().insert(addr, PeerInfo::new(addr));
         
-        // 实现出站连接处理逻辑
+        
         Ok(())
     }
 
