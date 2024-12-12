@@ -22,20 +22,20 @@ impl ConsensusManager {
     }
 
     pub async fn validate_transaction(&self, transaction: &Transaction) -> bool {
-        // 验证交易签名
+       
         if !self.verify_signature(transaction) {
             return false;
         }
 
-        // 验证交易时间戳
+        
         if !self.verify_timestamp(transaction) {
             return false;
         }
 
-        // 获取验证者确认
+       
         let confirmations = self.get_validator_confirmations(transaction).await;
         
-        // 需要超过2/3的验证者确认
+        
         confirmations > (self.validators.len() * 2 / 3)
     }
 
@@ -44,7 +44,7 @@ impl ConsensusManager {
     }
 
     fn verify_timestamp(&self, transaction: &Transaction) -> bool {
-        // 验证交易时间戳是否在允许范围内
+       
         let now = Instant::now();
         let transaction_age = now.duration_since(transaction.timestamp);
         transaction_age < self.consensus_timeout
