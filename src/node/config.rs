@@ -26,8 +26,8 @@ pub struct NodeConfig {
     pub port: u16,
     pub storage_path: String,
     pub max_connections: u32,
-    pub consensus_timeout: u64,   // 共识超时时间（毫秒）
-    pub bootstrap_nodes: Vec<String>, // 引导节点列表
+    pub consensus_timeout: u64,   
+    pub bootstrap_nodes: Vec<String>, 
     #[serde(default)]
     pub llm: Option<LLMConfig>,
 }
@@ -64,10 +64,10 @@ impl NodeConfig {
         let config_str = fs::read_to_string(path)?;
         let mut config: NodeConfig = toml::from_str(&config_str)?;
         
-        // 验证配置
+       
         config.validate()?;
         
-        // 创建存储目录
+       
         let storage_path = Path::new(&config.storage_path);
         if !storage_path.exists() {
             fs::create_dir_all(storage_path).map_err(|e| {
@@ -75,10 +75,9 @@ impl NodeConfig {
             })?;
         }
 
-        // 验证 LLM 配置（如果启用）
+       
         if let Some(llm_config) = &config.llm {
             if llm_config.enabled {
-                // 检查模型文件
                 let model_path = Path::new(&llm_config.model_path);
                 if !model_path.exists() {
                     return Err(ConfigError::StoragePath(
@@ -86,7 +85,7 @@ impl NodeConfig {
                     ));
                 }
                 
-                // 检查分词器文件
+               
                 let tokenizer_path = Path::new(&llm_config.tokenizer_path);
                 if !tokenizer_path.exists() {
                     return Err(ConfigError::StoragePath(
@@ -100,13 +99,12 @@ impl NodeConfig {
     }
 
     pub fn save(&self, path: &Path) -> Result<(), ConfigError> {
-        // 验证配置
+       
         self.validate()?;
         
         let config_str = toml::to_string_pretty(self)
             .map_err(ConfigError::Toml)?;
         
-        // 确保父目录存在
         if let Some(parent) = path.parent() {
             if !parent.exists() {
                 fs::create_dir_all(parent)?;
@@ -118,33 +116,33 @@ impl NodeConfig {
     }
 
     fn validate(&self) -> Result<(), ConfigError> {
-        // 验证监听地址
+        
         let addr = format!("{}:{}", self.host, self.port);
         addr.to_socket_addrs()
             .map_err(|_| ConfigError::InvalidAddress(addr.clone()))?;
 
-        // 验证引导节点地址
+       
         for node in &self.bootstrap_nodes {
             node.to_socket_addrs()
                 .map_err(|_| ConfigError::InvalidBootstrapNode(node.clone()))?;
         }
 
-        // 验证端口范围
+       
         if self.port < 1024 && self.port != 0 {
             warn!("Using privileged port {}, this might require root/admin privileges", self.port);
         }
 
-        // 验证连接数限制
+        
         if self.max_connections > 1000 {
             warn!("High max_connections value ({}), this might consume significant resources", self.max_connections);
         }
 
-        // 验证超时设置
+        
         if self.consensus_timeout < 1000 {
             warn!("Very low consensus_timeout ({}ms), this might cause consensus issues", self.consensus_timeout);
         }
 
-        // 验证存储路径
+        
         let storage_path = Path::new(&self.storage_path);
         if storage_path.exists() && !storage_path.is_dir() {
             return Err(ConfigError::StoragePath(
